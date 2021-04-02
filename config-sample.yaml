@@ -1,0 +1,22 @@
+# All values are examples! Do NOT use in production!!
+
+# basic authentication realm
+realm: DynDNS
+# DNS server, which serves the following domains
+dnsserver: 8.8.8.8 # only example, do not use it
+# a TSIG key (for example created with rndc-confgen) for create signatures
+#   key "example-key" {
+#     algorithm hmac-sha256;
+#     secret "ewMKPKjXpm5gkCC7rPdH1Nq5GB3KavYWL3mcA+Rf5Ec=";
+#   };
+tsig:
+  name: example-key
+  algorithm: hmac-sha256
+  secret: "ewMKPKjXpm5gkCC7rPdH1Nq5GB3KavYWL3mcA+Rf5Ec="
+
+domains:
+  # domain, which can be updated with username and password
+  some.example.com:
+    username: myrouter
+    # argon2 hash (create for example with new-client.py)
+    password: "$argon2id$v=19$m=102400,t=2,p=8$s3bOudcaA4DQGsMYAwDgvA$ECvZY80GQjTpqsQidXuQTg"
