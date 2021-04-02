@@ -24,7 +24,7 @@ class Configuration:
     @property
     def dnsServer(self) -> str:
         if 'dnsserver' in self._data:
-            if DNSUtils.isValidIPAddress(self._data['dnsserver']):
+            if DNSUtils.isValidIPAddress(self._data['dnsserver'], mustGlobal=False):
                 return self._data['dnsserver']
             else:
                 raise ValueError('dnsserver: invalid IP address')
