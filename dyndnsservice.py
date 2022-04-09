@@ -54,7 +54,7 @@ def runUpdate(domain: str, ip4: Optional[ipaddress.IPv4Address], ip6: Optional[i
         # use client IP address, will not overwrite explicitly given addresses
         if ip4 is None and isinstance(requestIPAddress, ipaddress.IPv4Address):
             ip4 = requestIPAddress
-        elif ipv6 is None and isinstance(requestIPAddress, ipaddress.IPv6Address):
+        elif ip6 is None and isinstance(requestIPAddress, ipaddress.IPv6Address):
             ip6 = requestIPAddress
     # prepare update
     update = DomainUpdate(config.getRealDomain(domain), config.tsigKey, config.dnsServer)
