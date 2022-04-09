@@ -9,6 +9,7 @@ pyyaml = "*"
 passlib = "*"
 argon2-cffi = "*"
 dnspython = "*"
+webargs = "*"
 
 [dev-packages]
 
