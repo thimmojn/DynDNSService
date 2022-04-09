@@ -1,6 +1,10 @@
 # -*- encoding: utf-8-unix -*-
 
+import ipaddress
 from flask import abort, Flask, request, Response
+from typing import Optional
+from webargs import fields
+from webargs.flaskparser import use_kwargs
 from config import Configuration
 from dnsutils import DNSUtils, DomainUpdate
 
@@ -24,9 +28,17 @@ def valueErrorHandler(error: ValueError) -> Response:
     return Response('application error', 500)
 
 @app.route('/')
-def runUpdate():
+@use_kwargs({
     # what domain should be updated?
-    domain = request.args.get('domain', '')
+    'domain': fields.String(required=True),
+    # IPv4 address to reference to
+    'ip4': fields.IPv4(missing=None),
+    # IPv6 address to reference to
+    'ip6': fields.IPv6(missing=None),
+    # use client address for ip4 or ip6, but only if the corrospondig address is not given
+    'me': fields.Boolean(truthy=None, falsy=None, missing=False)
+}, location='query')
+def runUpdate(domain: str, ip4: Optional[ipaddress.IPv4Address], ip6: Optional[ipaddress.IPv6Address], me: bool):
     # is domain update allowed?
     if not config.isAcceptedDomain(domain):
         abort(404, 'domain not found')
@@ -36,19 +48,14 @@ def runUpdate():
     # check username and password
     if not config.isClientAuthorized(domain, **request.authorization):
         abort(403)
-    # get IPv4 and IPv6 address
-    ip4 = request.args.get('ip4', None)
-    ip6 = request.args.get('ip6', None)
-    if ip4 is None and ip6 is None:
-        app.logger.error('no IPv4 or IPv6 address given')
-        abort(400, 'need at least IPv4 or IPv6 address')
-    # check IP addresses
-    if ip4 is not None and not DNSUtils.isValidIPAddress(ip4, 4):
-        app.logger.error('invalid IPv4 address')
-        abort(400, 'invalid IPv4 address')
-    if ip6 is not None and not DNSUtils.isValidIPAddress(ip6, 6):
-        app.logger.error('invalid IPv6 address')
-        abort(400, 'invalid IPv6 address')
+    # handle client address
+    if me:
+        requestIPAddress = ipaddress.ip_address(request.remote_addr)
+        # use client IP address, will not overwrite explicitly given addresses
+        if ip4 is None and isinstance(requestIPAddress, ipaddress.IPv4Address):
+            ip4 = requestIPAddress
+        elif ipv6 is None and isinstance(requestIPAddress, ipaddress.IPv6Address):
+            ip6 = requestIPAddress
     # prepare update
     update = DomainUpdate(config.getRealDomain(domain), config.tsigKey, config.dnsServer)
     if ip4 is not None:
