@@ -46,7 +46,7 @@ def runUpdate(domain: str, ip4: Optional[ipaddress.IPv4Address], ip6: Optional[i
     if request.authorization is None:
         abort(401)
     # check username and password
-    if not config.isClientAuthorized(domain, **request.authorization):
+    if not config.isClientAuthorized(domain, request.authorization.username, request.authorization.password):
         abort(403)
     # handle client address
     if me:
